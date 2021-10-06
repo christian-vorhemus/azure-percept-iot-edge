@@ -8,6 +8,6 @@ jobs:
       - uses: actions/checkout@v1
       - uses: spyoungtech/mirror-action@master
         with:
-          REMOTE: 'https://dev.azure.com/chrysalis-innersource/[...]'
+          REMOTE: 'https://chrysalis-innersource@dev.azure.com/chrysalis-innersource/Azure%20Percept%20Python%20library/_git/Azure%20Percept%20IoT%20Edge%20Module'
           GIT_USERNAME: chrysalis-innersource
           GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
