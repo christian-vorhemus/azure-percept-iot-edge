@@ -26,6 +26,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+deployment.2.template.json
+config/
+modules/audioclassifier/azure-percept-py
+modules/audioclassifier/audio_model.onnx
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

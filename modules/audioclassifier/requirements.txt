@@ -1,0 +1,5 @@
+azure-iot-device
+azure-storage-blob
+numpy
+librosa
+matplotlib
