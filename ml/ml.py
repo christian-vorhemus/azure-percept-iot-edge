@@ -32,16 +32,14 @@ def open_audio(filepath):
     return channel0
 
 
-def save_as_spectrogram(input_audio_file, output_image_path):
-    y, sr = librosa.load(input_audio_file, sr=16000, mono=False)
+def save_as_spectrogram(input_audio_file, output_image_path, sample_rate=16000, dpi=300):
+    y, sr = librosa.load(input_audio_file, sr=sample_rate, mono=False)
     fast_fourier_signal = np.abs(librosa.stft(y[0], n_fft=255, hop_length=200))
     fast_fourier_signal_log = librosa.amplitude_to_db(
         fast_fourier_signal, top_db=None)
 
-    dpi = 300
-    height = 306
-    width = 1920
-    depth = 4
+    height = fast_fourier_signal.shape[0]
+    width = fast_fourier_signal.shape[1]
 
     figsize = width / float(dpi), height / float(dpi)
     fig = plt.figure(figsize=figsize, frameon=False)
@@ -116,7 +114,7 @@ def predict(audio_file, model_onnx_path):
     f = tempfile.NamedTemporaryFile()
     save_as_spectrogram(audio_file, f.name)
     net = cv2.dnn.readNetFromONNX(model_onnx_path)
-    frame = cv2.imread(f.name)
+    frame = cv2.imread(f.name+".png")
     f.close()
 
     blob = cv2.dnn.blobFromImage(
@@ -149,11 +147,9 @@ def train(filepaths_train, filepaths_test, epochs=10, minibatch_size=10):
 
     num_classes = len(filepaths_train)
     feature_extract = True
+    img = train_dataset.__getitem__(0)[0].shape
 
     model = models.resnet18(pretrained=True)
-
-    layers = list(model.children())
-    first_layer = layers[0]
 
     # If feature_extract == False, model parameters are frozen
     set_parameter_requires_grad(model, feature_extract)
@@ -162,13 +158,6 @@ def train(filepaths_train, filepaths_test, epochs=10, minibatch_size=10):
     model.fc = nn.Linear(num_ftrs, num_classes)
 
     params_to_update = model.parameters()
-
-    print("Params to learn:")
-    if feature_extract:
-        params_to_update = []
-        for name, param in model.named_parameters():
-            if param.requires_grad == True:
-                params_to_update.append(param)
 
     criterion = CrossEntropyLoss()
     optimizer = Adam(params_to_update, lr=0.001)
@@ -236,11 +225,11 @@ def train(filepaths_train, filepaths_test, epochs=10, minibatch_size=10):
 
     epoch_count = range(0, epochs)
 
-    torch.save(model, "audio_model.pt")
+    # torch.save(model, "audio_model.pt")
 
-    num_channels = 3
-    img_height = 306
-    img_width = 1920
+    num_channels = img[0]
+    img_height = img[1]
+    img_width = img[2]
     dummy_input = torch.randn(1, num_channels, img_height, img_width)
     dummy_input = dummy_input.to(device)
     torch.onnx.export(model, dummy_input, "audio_model.onnx")
@@ -268,29 +257,52 @@ if __name__ == "__main__":
         description='Train an audio classification model')
 
     s_parser = parser.add_subparsers(
-        help='Convert WAV files in spectrogram images', dest="command")
+        help='Convert, train and test an audio classifier', dest="command")
     convert_parser = s_parser.add_parser('convert')
     convert_parser.add_argument(
         '-i', '--input', type=str, help="A file path to a directory that contain WAV files", required=True)
     convert_parser.add_argument(
         '-o', '--output', type=str, help="A file path to a directory where the image files are placed", required=True)
+
+    train_parser = s_parser.add_parser('train')
+    train_parser.add_argument(
+        '-i', '--inputpaths', nargs='+', help="A list of path to directories in which spectrograms for training the model are placed", required=True)
+    train_parser.add_argument(
+        '-t', '--testpaths', nargs='+', help="A list of path to directories in which spectrograms for evaluating the model are placed", required=True)
+    train_parser.add_argument(
+        '-e', '--epochs', type=int, help="Number of epochs the model should be trained", required=False)
+    train_parser.add_argument(
+        '-m', '--minibatch', type=int, help="Size of images taken per mini batch", required=False)
+
+    predict_parser = s_parser.add_parser('predict')
+    predict_parser.add_argument(
+        '-i', '--input', type=str, help="Path to the WAV file that should be classified", required=True)
+    predict_parser.add_argument(
+        '-m', '--modelfile', type=str, help="Path to the ONNX model file that should be used for classifying", required=True)
     args = parser.parse_args()
 
     if args.command == "convert":
-        input_directories = args.input
-        output_directories = args.output
-        for f in glob.glob(os.path.join(input_directories, '*'), recursive=True):
+        input_directory = args.input
+        output_directory = args.output
+        for f in glob.glob(os.path.join(input_directory, '*'), recursive=True):
             fbase = Path(f).stem
             save_as_spectrogram(f, os.path.join(
-                output_directories, fbase+".png"))
+                output_directory, fbase+".png"))
     elif args.command == "train":
-        train_datasets = ["./data/audiospectrograms2/train/normal",
-                          "./data/audiospectrograms2/train/broken"]
-        test_datasets = ["./data/audiospectrograms2/test/normal",
-                         "./data/audiospectrograms2/test/broken"]
+        train_datasets = args.inputpaths
+        test_datasets = args.testpaths
+        if args.epochs is not None:
+            epochs = args.epochs
+        else:
+            epochs = 10
 
-        train()
+        if args.minibatch is not None:
+            minibatch_size = args.minibatch
+        else:
+            minibatch_size = 10
+        train(train_datasets, test_datasets, epochs, minibatch_size)
     elif args.command == "predict":
-        audio_file = None
-        model_onnx_path = None
+        audio_file = args.input
+        model_onnx_path = args.modelfile
         ma, score = predict(audio_file, model_onnx_path)
+        print(f"Predicated class {ma} with score {score}")

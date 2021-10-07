@@ -44,11 +44,11 @@
       "request": "launch",
       "program": "${file}",
       "args": [
-        "convert",
-        "--input",
-        "C:\\Users\\chvorhem\\Desktop\\ML-Garage\\data\\valve\\id_00\\normal",
-        "--output",
-        "C:\\Users\\chvorhem\\Desktop\\okay"
+        "predict",
+        "-i",
+        "C:\\Users\\chvorhem\\Desktop\\ML-Garage\\data\\valve\\id_00\\normal\\00000003.wav",
+        "-m",
+        "C:\\Users\\chvorhem\\Desktop\\Percept\\azure-percept-iot-edge\\audio_model.onnx"
       ],
       "console": "integratedTerminal"
     },
