@@ -13,8 +13,8 @@ This is a sample Azure IoT Edge module that runs an audio classification predict
 2. Convert the WAV files into spectrograms using `python ml.py convert --input /path/to/wav/files --output /output/path/images`. Do this for every directory you have.
 3. Use a script or manually divide the images into a training and a test set. Usually 80% of images per class are used for training, the rest for test. If you have 2 classes (damaged and intact), you should have 4 folders: 2 folders for the training data for damaged and intact parts, 2 directories for the test data for damaged and intact parts.
 4. Now train a machine learning classifier pointing to the training folders of images containing the spectrograms as input (`-i`) as well as the test folders (`-t`) `python ml.py train -i /output/path/images/damaged/training /output/path/images/intact/training -t /output/path/images/damaged/test /output/path/images/intact/test -e 10`
-5. After training, a new file `audio_classifier.onnx` should be present in your working directory. You can use this model to now make predictions for single audo files, for example `python ml.py predict -i /path/to/file.wav -m /path/to/audio_model.onnx`. 
-6. Make sure that you move `audio_classifier.onnx` into the modules/audioclassifier directory.
+5. After training, a new file `audio_model.onnx` should be present in your `ml/` working directory. You can use this model to now make predictions for single audo files, for example `python ml.py predict -i /path/to/file.wav -m /path/to/audio_model.onnx`. 
+6. Make sure that you move `audio_model.onnx` into the modules/audioclassifier directory.
 
 ## Build and push Docker Image
 1. Make sure you set the environment variable `EdgeHubConnectionString` in `deployment.template.json` to the connection string of your IoT Hub. The module uses it to send telemetry messages to the IoT Hub.
