@@ -17,7 +17,9 @@ This is a sample Azure IoT Edge module that runs an audio classification predict
 6. Make sure that you move `audio_classifier.onnx` into the modules/audioclassifier directory.
 
 ## Build and push Docker Image
-To build an Azure IoT Edge module, you can follow the [official documentation](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-python-module?view=iotedge-2020-11#build-and-push-your-module). To build a docker image, change into the modules/audioclassifier directory and run `docker build -f Dockerfile.arm64v8 -t <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8 .` assuming you have an Azure Container Registry called `<YOURNAME>`. Afterwards push it to your registry using `docker push <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8`
+1. Make sure you set the environment variable `EdgeHubConnectionString` in `deployment.template.json` to the connection string of your IoT Hub. The module uses it to send telemetry messages to the IoT Hub.
+2. Change the `repository` property in `module.json` to your name of the container registry you use.
+3. To build an Azure IoT Edge module, you can follow the [official documentation](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-python-module?view=iotedge-2020-11#build-and-push-your-module). To build a docker image, change into the modules/audioclassifier directory and run `docker build -f Dockerfile.arm64v8 -t <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8 .` assuming you have an Azure Container Registry called `<YOURNAME>`. Afterwards push it to your registry using `docker push <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8`
 
 ## Deploy IoT Edge Module to Azure Percept
 If you want to use the Azure Portal, please refer to [this guide](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal?view=iotedge-2020-11) how to run images from a container registry on an Azure IoT Edge device.
