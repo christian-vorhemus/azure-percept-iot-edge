@@ -2,9 +2,9 @@
   "$schema-version": "0.0.1",
   "description": "",
   "image": {
-    "repository": "vorhemusregistry.azurecr.io/audioclassifier",
+    "repository": "<YOURNAME>.azurecr.io/audioclassifier",
     "tag": {
-      "version": "0.0.8",
+      "version": "0.0.1",
       "platforms": {
         "arm64v8": "./Dockerfile.arm64v8"
       }
