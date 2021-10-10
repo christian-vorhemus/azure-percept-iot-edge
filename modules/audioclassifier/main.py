@@ -145,8 +145,8 @@ def recording(module_client: IoTHubModuleClient, device_client: IoTHubDeviceClie
             entered = True
             if cooldown <= 0:
                 cooldown = 20
-                msg = {"type": "faulty_valve",
-                       "message": "A potentially faulty valve was detected", "score": score, "file": audio_file}
+                msg = {"type": "faulty_part",
+                       "message": "A potentially faulty part was detected", "score": score, "file": audio_file}
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 loop.run_until_complete(upload_blob(device_client, audio_file))
