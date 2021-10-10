@@ -3,10 +3,10 @@ This is a sample Azure IoT Edge module that runs an audio classification predict
 ## Train an audio classifier
 
 ### Install and prepare
-1. Make sure that you have Git, Python 3 and Docker installed on your machine.
+1. Make sure that you have Git, Python 3 (3.8 recommended) and Docker installed on your machine.
 2. Clone this repository `git clone https://github.com/christian-vorhemus/azure-percept-iot-edge.git`. If you are using Azure DevOps, use `git clone https://dev.azure.com/chrysalis-innersource/Azure%20Percept%20Python%20library/_git/Azure%20Percept%20IoT%20Edge%20Module`
 3. Change directory into the modules/audioclassifier of the just cloned repository and clone the Azure Percept Python library `git clone https://github.com/christian-vorhemus/azure-percept-py.git` into it. The folder "azure-percept-py" should now be present within modules/audioclassifier.
-4. Change directory into the `ml` folder and run `pip install -r requirements.txt`
+4. Change directory into the `ml` folder and run `pip install -r requirements.txt`. If you see errors please investigate them for more information. For example, some packages might not exist for certain platforms.
 
 ### Train and test
 1. Prepare your audio datatset you want to use. If you don't have one yet you can use the [Malfunctioning Industrial Machine Investigation](https://zenodo.org/record/3384388#.YWKiqflBzOi) dataset. Make sure that you have at least 2 sets, a directory containing several WAV files of **working** parts and a directory of WAV files containing **damaged** parts.
