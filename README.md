@@ -23,10 +23,20 @@ Many industrial machines make noises which can be used to detect whether the mac
 
 ## Build and push Docker image
 1. Make sure you set the environment variable `EdgeHubConnectionString` in `deployment.template.json` to the connection string of your IoT Hub. The module uses it to send telemetry messages to the IoT Hub device.
-2. Change the `repository` property in `module.json` to your name of the container registry you use.
-3. You may need to change the integer value in `main.py` that describes if a part is faulty or okay. The if-statement `if classification == 1 and score >= 0.6:` assumes that `audio_model.onnx` returns 1 whenever a damaged part was detected. Depending on how you trained the model and how many classes you have this value might be different.
-4. Make sure that you [connect a storage account to your IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-python-python-file-upload#associate-an-azure-storage-account-to-iot-hub). The module uses this storage account to upload .WAV files.
-5. To build an Azure IoT Edge module, you can follow the [official documentation](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-python-module?view=iotedge-2020-11#build-and-push-your-module). To build a docker image, change into the modules/audioclassifier directory and run `docker build -f Dockerfile.arm64v8 -t <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8 .` assuming you have an Azure Container Registry called `<YOURNAME>`. Afterwards push it to your registry using `docker push <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8`
+2. Set registry credentials
+```
+            "registryCredentials": {
+              "azurestackedgecr": {
+                "username": "$CONTAINER_REGISTRY_USERNAME",
+                "password": "$CONTAINER_REGISTRY_PASSWORD",
+                "address": "azurestackedgecr.azurecr.io"
+              }
+            }
+```
+4. Change the `repository` property in `module.json` to your name of the container registry you use.
+5. You may need to change the integer value in `main.py` that describes if a part is faulty or okay. The if-statement `if classification == 1 and score >= 0.6:` assumes that `audio_model.onnx` returns 1 whenever a damaged part was detected. Depending on how you trained the model and how many classes you have this value might be different.
+6. Make sure that you [connect a storage account to your IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-python-python-file-upload#associate-an-azure-storage-account-to-iot-hub). The module uses this storage account to upload .WAV files.
+7. To build an Azure IoT Edge module, you can follow the [official documentation](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-python-module?view=iotedge-2020-11#build-and-push-your-module). To build a docker image, change into the modules/audioclassifier directory and run `docker build -f Dockerfile.arm64v8 -t <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8 .` assuming you have an Azure Container Registry called `<YOURNAME>`. Afterwards push it to your registry using `docker push <YOURNAME>.azurecr.io/audioclassifier:0.0.1-arm64v8`
 
 ## Deploy IoT Edge Module to Azure Percept
 If you want to use the Azure Portal, please refer to [this guide](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-deploy-modules-portal?view=iotedge-2020-11) how to run images from a container registry on an Azure IoT Edge device.
