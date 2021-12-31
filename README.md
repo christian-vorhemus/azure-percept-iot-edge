@@ -11,8 +11,7 @@ Many industrial machines make noises which can be used to detect whether the mac
 ### Install and prepare
 1. Make sure that you have Git, Python 3 (3.8 recommended) and Docker installed on your machine.
 2. Clone this repository `git clone https://github.com/christian-vorhemus/azure-percept-iot-edge.git`.
-3. Change directory into the modules/audioclassifier of the just cloned repository and clone the Azure Percept Python library `git clone https://github.com/christian-vorhemus/azure-percept-py.git` into it. The folder "azure-percept-py" should now be present within modules/audioclassifier.
-4. Change directory into the `ml` folder and run `pip install -r requirements.txt`. If you see errors please investigate them for more information. For example, some packages might not exist for certain platforms.
+3. Change directory into the `ml` folder and run `pip install -r requirements.txt`. If you see errors please investigate them for more information. For example, some packages might not exist for certain platforms.
 
 ### Train an audio classifier machine learning model
 1. Prepare your audio dataset you want to use. If you don't have one yet you can use the [Malfunctioning Industrial Machine Investigation](https://zenodo.org/record/3384388#.YWKiqflBzOi) dataset. Make sure that you have at least 2 sets, a directory containing several WAV files of **working** parts and a directory of WAV files containing **damaged** parts.
