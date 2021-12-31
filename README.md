@@ -22,7 +22,7 @@ Many industrial machines make noises which can be used to detect whether the mac
 6. Make sure that you move `audio_model.onnx` into the modules/audioclassifier directory.
 
 ## Build and push Docker image
-1. Make sure you set the environment variable `EdgeHubConnectionString` in `deployment.template.json` to the connection string of your IoT Hub. The module uses it to send telemetry messages to the IoT Hub.
+1. Make sure you set the environment variable `EdgeHubConnectionString` in `deployment.template.json` to the connection string of your IoT Hub. The module uses it to send telemetry messages to the IoT Hub device.
 2. Change the `repository` property in `module.json` to your name of the container registry you use.
 3. You may need to change the integer value in `main.py` that describes if a part is faulty or okay. The if-statement `if classification == 1 and score >= 0.6:` assumes that `audio_model.onnx` returns 1 whenever a damaged part was detected. Depending on how you trained the model and how many classes you have this value might be different.
 4. Make sure that you [connect a storage account to your IoT Hub](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-python-python-file-upload#associate-an-azure-storage-account-to-iot-hub). The module uses this storage account to upload .WAV files.
