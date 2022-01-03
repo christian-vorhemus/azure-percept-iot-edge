@@ -2,7 +2,7 @@
 
 This repository contains the open sourced part of the acoustic predictive maintenance project with Azure Percept where defective machines are detected by their sound. The classification is done locally using a melspectrogram image that is evaluated on the hardware accelerated VPU (Visual Processing Unit) of Azure Percept. The software is written in Python and hosted as an Azure IoT Edge Module.
 
-## Background and architecture
+## Background and Azure Percept architecture
 
 Many industrial machines make noises which can be used to detect whether the machine is faulty or could soon be defective. Detecting and classifying these sounds can be performed either manually or automatically, whereby the requirement is usually that automated classification must be performed locally ("on the edge") in order to ensure a self-sufficient environment that also functions in the event of temporary Internet failures. Processing in the cloud is particularly useful if further activities are to be carried out, such as sending a notification to a technician as soon as a potentially defective machine has been detected. The approach described here is therefore a hybrid architecture in which the audio recording and the assessment of whether the noise from the machine indicates a fault is performed locally; if this is the case, a message is sent to a message broker in the cloud. The architecture below describes the process in more detail. 
 
