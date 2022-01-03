@@ -1,6 +1,6 @@
 # Acoustic Predictive Maintenance with Azure Percept
 
-This repository contains the open sourced part of the acoustic predictive maintenance project with Azure Percept where defective machines are detected by their sound. The classification is done locally using a melspectrogram image that is evaluated on the hardware accelerated VPU (Visual Processing Unit) of Azure Percept. The software is written in Python and hosted as an Azure IoT Edge Module.
+This repository contains the open sourced part of the acoustic predictive maintenance project with Azure Percept where defective machines are detected by their sound. The classification is done locally using a melspectrogram image that is evaluated on the hardware accelerated VPU (Visual Processing Unit) of Azure Percept. The service is written in Python and hosted as an Azure IoT Edge Module.
 
 ## Background and Azure Percept architecture
 
