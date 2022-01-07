@@ -1,5 +1,5 @@
 from azure.iot.device.iothub.aio.async_clients import IoTHubDeviceClient
-from azure.iot.percept import AudioDevice
+from azure.iot.percept import AudioDevice, VisionDevice, InferenceResult
 import time
 import os
 import sys
@@ -18,9 +18,11 @@ import cv2
 import librosa
 import uuid
 from shutil import copyfile
+from os.path import exists
 
 running = True
 audio = AudioDevice()
+vision = VisionDevice()
 cooldown = 0
 
 
@@ -95,7 +97,34 @@ def save_as_spectrogram(input_audio_file, output_image_path):
     plt.close()
 
 
-def predict(audio_file, image_name):
+def predict_vpu(audio_file, image_name):
+    save_as_spectrogram(audio_file, f"./{image_name}")
+    frame = cv2.imread(image_name)
+    frame = np.moveaxis(frame, -1, 0).astype(np.float32)
+
+    b = frame[0].tobytes()
+    g = frame[1].tobytes()
+    r = frame[2].tobytes()
+
+    img = b+g+r
+
+    # frame.shape[1] is image height, frame.shape[2] is image width
+    res: InferenceResult = vision.get_inference(
+        input=img, input_shape=(frame.shape[1], frame.shape[2]))
+
+    sm = softmax(res.inference)
+
+    ma = np.argmax(sm)  # if ma = 0, the sound is normal. 1 = broken
+    score = 0
+    if ma == 0:
+        score = float(sm[0])
+    else:
+        score = float(sm[1])
+
+    return(ma, score)
+
+
+def predict_cpu(audio_file, image_name):
     save_as_spectrogram(audio_file, f"./{image_name}")
     net = cv2.dnn.readNetFromONNX("./audio_model.onnx")
     frame = cv2.imread(f"./{image_name}")
@@ -124,27 +153,43 @@ def predict(audio_file, image_name):
 def recording(module_client: IoTHubModuleClient, device_client: IoTHubDeviceClient):
     global audio
     global cooldown
-    while True:
-        if audio.is_ready() is True:
-            break
-        else:
-            time.sleep(1)
+
+    if "CooldownPeriod" not in os.environ:
+        cooldown_time = 20
+    else:
+        cooldown_time = int(os.environ["CooldownPeriod"])
+
+    if "RecordingTime" not in os.environ:
+        recording_time = 10
+    else:
+        recording_time = int(os.environ["RecordingTime"])
+
+    if "InferenceTime" not in os.environ:
+        sleep_time = 15
+    else:
+        sleep_time = int(os.environ["InferenceTime"])
+
+    if "InferenceThreshold" not in os.environ:
+        inference_threshold = 0.6
+    else:
+        inference_threshold = float(os.environ["InferenceThreshold"])
+
     while running:
         file_id = str(uuid.uuid4())
         audio_file = file_id + ".wav"
         image_file = file_id + ".png"
         print(f"Recording {audio_file}...")
         audio.start_recording(f"./{audio_file}")
-        time.sleep(10)
+        time.sleep(recording_time)
         audio.stop_recording()
         print("Recording stopped")
-        classification, score = predict(f"./{audio_file}", image_file)
+        classification, score = predict_vpu(f"./{audio_file}", image_file)
         print(f"Class: {classification}, score: {score}")
         entered = False
-        if classification == 1 and score >= 0.6:
+        if classification == 1 and score >= inference_threshold:
             entered = True
             if cooldown <= 0:
-                cooldown = 20
+                cooldown = cooldown_time
                 msg = {"type": "faulty_part",
                        "message": "A potentially faulty part was detected", "score": score, "file": audio_file}
                 loop = asyncio.new_event_loop()
@@ -152,21 +197,22 @@ def recording(module_client: IoTHubModuleClient, device_client: IoTHubDeviceClie
                 loop.run_until_complete(upload_blob(device_client, audio_file))
                 loop.run_until_complete(send_to_iot_hub(module_client, msg))
                 loop.close()
-        time.sleep(15)
+        time.sleep(sleep_time)
         if entered is False:
             os.remove(f"./{audio_file}")
         os.remove(f"./{image_file}")
         cooldown -= 1
-        time.sleep(15)
+        time.sleep(sleep_time)
 
 
 async def main():
+    global vision
     try:
         global running
-        if not sys.version >= "3.5.3":
+        if not sys.version >= "3.6.0":
             raise Exception(
-                "The sample requires python 3.5.3+. Current version of Python: %s" % sys.version)
-        print("IoT Hub Client for Python")
+                "The sample requires python 3.6.0+. Current version of Python: %s" % sys.version)
+        print("Audio classifier module startup")
 
         module_client = IoTHubModuleClient.create_from_edge_environment()
 
@@ -176,6 +222,31 @@ async def main():
 
         device_client = IoTHubDeviceClient.create_from_connection_string(
             os.environ["EdgeHubConnectionString"])
+
+        print("Authenticating vision sensor...")
+        while True:
+            if vision.is_ready() is True:
+                break
+            else:
+                time.sleep(1)
+        print("Authentication of vision device successful!")
+
+        if exists("./audio_model.onnx") is False:
+            raise Exception("Audio model audio_model.onnx is missing!")
+
+        if exists("./audio_model.blob") is False:
+            vision.convert_model("./audio_model.onnx", scale_values=[58.395, 57.120, 57.375], mean_values=[
+                                 123.675, 116.28, 103.53], reverse_input_channels=True, output_dir="./")
+
+        vision.start_inference("./audio_model.blob")
+
+        print("Authenticating audio sensor...")
+        while True:
+            if audio.is_ready() is True:
+                break
+            else:
+                time.sleep(1)
+        print("Authentication of audio device successful!")
 
         rec = threading.Thread(target=recording, args=(
             module_client, device_client,))
@@ -203,6 +274,8 @@ async def main():
         # Cancel listening
         # listeners.cancel()
         audio.close()
+        vision.stop_inference()
+        vision.close()
         running = False
 
         # Finally, disconnect

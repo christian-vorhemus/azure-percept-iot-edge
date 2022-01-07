@@ -305,4 +305,4 @@ if __name__ == "__main__":
         audio_file = args.input
         model_onnx_path = args.modelfile
         ma, score = predict(audio_file, model_onnx_path)
-        print(f"Predicated class {ma} with score {score}")
+        print(f"Predicted class {ma} with score {score}")

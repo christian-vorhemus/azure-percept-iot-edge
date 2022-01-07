@@ -2,7 +2,7 @@
   "$schema-version": "0.0.1",
   "description": "",
   "image": {
-    "repository": "<YOURNAME>.azurecr.io/audioclassifier",
+    "repository": "<containerregistryname>.azurecr.io/audioclassifier",
     "tag": {
       "version": "0.0.1",
       "platforms": {

@@ -9,7 +9,13 @@
           "settings": {
             "minDockerVersion": "v1.25",
             "loggingOptions": "",
-            "registryCredentials": {}
+            "registryCredentials": {
+              "<containerregistryname>": {
+                "username": "<containerregistryusername>",
+                "password": "<containerregistrypassword",
+                "address": "<containerregistryname>.azurecr.io"
+              }
+            }
           }
         },
         "systemModules": {
@@ -56,22 +62,30 @@
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
+            "env": {
+              "EdgeHubConnectionString": {
+                "value": "HostName=[...]"
+              }
+            },
             "settings": {
               "image": "${MODULES.audioclassifier}",
               "createOptions": {
                 "HostConfig": {
+                  "NetworkMode": "host",
                   "Binds": [
-                    "/dev/bus/usb:/dev/bus/usb",
+                    "/dev/:/dev/",
                     "/tmp:/tmp",
                     "/dev/snd:/dev/snd"
                   ],
                   "DeviceCgroupRules": [
                     "c 189:* rmw"
                   ],
-                  "Privileged": true,
-                  "Env": [
-                    "EdgeHubConnectionString=HostName=[...]"
-                  ]
+                  "Privileged": true
+                },
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
                 }
               }
             }
