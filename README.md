@@ -1,6 +1,6 @@
 # Acoustic Predictive Maintenance with Azure Percept
 
-This repository contains the open sourced part of the acoustic predictive maintenance project with Azure Percept where defective machines are detected by their sound. The classification is done locally using a melspectrogram image that is evaluated on the hardware accelerated VPU (Visual Processing Unit) of Azure Percept. The service is written in Python and hosted as an Azure IoT Edge Module.
+This repository contains the open-sourced part of the acoustic predictive maintenance project with Azure Percept where defective machines are detected by their sound. The classification is done locally using a mel spectrogram image that is evaluated on the hardware accelerated VPU (Visual Processing Unit) of Azure Percept. The service is written in Python and hosted as an Azure IoT Edge Module.
 
 ![Azure Percept Audio Spectrogram illustration](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/7b732a10974499810b18e5b4e54f1ba8b7a095c0/docs/azure_percept_audio.gif)
 
@@ -11,10 +11,10 @@ Many industrial machines create sound which can be used to detect whether the ma
 ![Azure Percept Architecture](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/7b732a10974499810b18e5b4e54f1ba8b7a095c0/docs/azure_percept_architecture.png)
 
 - Audio recording, inference and message sending all happen in a single Python file, [main.py](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py). This Python module first opens a connection to the Azure IoT Hub the Percept device is connected to and prepares the environment (e.g. converting the ONNX model trained as described below in a .blob format suitable for the Intel Myriad X VPU device). 
-- Afterwards, the [recording()](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py#L153) function is called which uses the Azure Percept Audio device to record sound and saves it locally as a WAV file. This file is converted to a melspectrogram image in the [save_as_spectrogram()](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py#L79) function and passed on to the vision.get_inference() function which processes the image on the VPU. For doing this, the [Azure Percept Python package](https://github.com/christian-vorhemus/azure-percept-py) is used.
+- Afterwards, the [recording()](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py#L153) function is called which uses the Azure Percept Audio device to record sound and saves it locally as a WAV file. This file is converted to a mel spectrogram image in the [save_as_spectrogram()](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py#L79) function and passed on to the vision.get_inference() function which processes the image on the VPU. For doing this, the [Azure Percept Python package](https://github.com/christian-vorhemus/azure-percept-py) is used.
 - If the inference result indicates that the part is faulty (using the predicated class and score) a message is sent to the IoT Hub in [send_to_iot_hub()](https://github.com/christian-vorhemus/azure-percept-iot-edge/blob/main/modules/audioclassifier/main.py#L34) and additionally the WAV file is uploaded to the Azure Storage account associated with the IoT Hub for further inspection by technicians.
 - The message in the IoT Hub can now be used for further processing, for example forwarding it to another message broker like Azure Service Bus through message routing and an Azure Logic App listening on incoming messages and notifying technicians that potentially faulty parts in the plant have been detected.
-- NOTE: The Azure infrastructre part as shown in the architecture is not part of this repository.
+- NOTE: The Azure infrastructure part as shown in the architecture is not part of this repository.
 
 ## Train an audio classifier
 
