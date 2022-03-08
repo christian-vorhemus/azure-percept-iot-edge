@@ -80,7 +80,7 @@
                   "DeviceCgroupRules": [
                     "c 189:* rmw"
                   ],
-                  "Privileged": true
+                  "Privileged": false
                 },
                 "NetworkingConfig": {
                   "EndpointsConfig": {
